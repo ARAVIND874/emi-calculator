@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #ff0000;
+            background: #007bff; /* Blue theme */
             color: #fff;
             margin: 0;
             text-align: center;
@@ -40,18 +40,31 @@
             color: black;
         }
         button {
-            background: #ff5733;
+            background: #0056b3; /* Darker Blue */
             color: white;
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
         }
         button:hover {
-            background: #d32f2f;
+            background: #003f7f;
         }
         h3 span {
             font-weight: bold;
             color: #ffff00;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #fff;
+        }
+        th {
+            background: #0056b3;
         }
     </style>
 </head>
@@ -72,9 +85,18 @@
         <button onclick="calculateEMI()">Calculate EMI</button>
 
         <h3>Monthly EMI: <span id="emiResult"></span></h3>
-        <h3>Yearly EMI: <span id="yearlyEMI"></span></h3>
         <h3>Total Interest: <span id="totalInterest"></span></h3>
         <h3>Total Payment: <span id="totalPayment"></span></h3>
+
+        <table id="amortizationTable">
+            <tr>
+                <th>Month</th>
+                <th>Principal Paid</th>
+                <th>Interest Charged</th>
+                <th>Total Payment</th>
+                <th>Balance</th>
+            </tr>
+        </table>
     </div>
 
     <script>
@@ -93,14 +115,25 @@
                 let emi = (loanAmount * monthlyRate * Math.pow((1 + monthlyRate), tenureMonths)) /
                           (Math.pow((1 + monthlyRate), tenureMonths) - 1);
 
-                let yearlyEMI = emi * 12;
                 let totalPayment = emi * tenureMonths;
                 let totalInterest = totalPayment - loanAmount;
 
                 document.getElementById("emiResult").innerText = `₹${Math.round(emi)}`;
-                document.getElementById("yearlyEMI").innerText = `₹${Math.round(yearlyEMI)}`;
                 document.getElementById("totalInterest").innerText = `₹${Math.round(totalInterest)}`;
                 document.getElementById("totalPayment").innerText = `₹${Math.round(totalPayment)}`;
+
+                let balance = loanAmount;
+                let table = document.getElementById("amortizationTable");
+
+                for (let month = 1; month <= tenureMonths; month++) {
+                    let interest = balance * monthlyRate;
+                    let principal = emi - interest;
+                    balance -= principal;
+
+                    let row = table.insertRow();
+                    row.innerHTML = `<td>${month}</td><td>₹${Math.round(principal)}</td><td>₹${Math.round(interest)}</td>
+                                    <td>₹${Math.round(emi)}</td><td>₹${Math.round(balance)}</td>`;
+                }
             } else {
                 document.getElementById("emiResult").innerText = "Please enter all values!";
             }
