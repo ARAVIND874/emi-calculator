@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMI Calculator</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #ff0000;
+            color: #fff;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 18px;
+            text-align: center;
+        }
+        input {
+            background: rgba(255, 255, 255, 0.8);
+            color: black;
+        }
+        button {
+            background: #ff5733;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #d32f2f;
+        }
+        h3 span {
+            font-weight: bold;
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>EMI Calculator</h2>
+        <label>Loan Amount:</label>
+        <input type="number" id="loanAmount" placeholder="Enter amount">
+
+        <label>Interest Rate (% per annum):</label>
+        <input type="number" id="interestRate" placeholder="Enter interest rate">
+
+        <label>Loan Tenure:</label>
+        <input type="number" id="tenureMonths" placeholder="Enter tenure in months">
+        <input type="number" id="tenureYears" placeholder="Enter tenure in years">
+
+        <button onclick="calculateEMI()">Calculate EMI</button>
+
+        <h3>Monthly EMI: <span id="emiResult"></span></h3>
+        <h3>Yearly EMI: <span id="yearlyEMI"></span></h3>
+        <h3>Total Interest: <span id="totalInterest"></span></h3>
+        <h3>Total Payment: <span id="totalPayment"></span></h3>
+    </div>
+
+    <script>
+        function calculateEMI() {
+            let loanAmount = parseFloat(document.getElementById("loanAmount").value);
+            let interestRate = parseFloat(document.getElementById("interestRate").value);
+            let tenureMonths = parseFloat(document.getElementById("tenureMonths").value);
+            let tenureYears = parseFloat(document.getElementById("tenureYears").value);
+
+            if (!tenureMonths && tenureYears) {
+                tenureMonths = tenureYears * 12;
+            }
+
+            if (loanAmount && interestRate && tenureMonths) {
+                let monthlyRate = (interestRate / 100) / 12;
+                let emi = (loanAmount * monthlyRate * Math.pow((1 + monthlyRate), tenureMonths)) /
+                          (Math.pow((1 + monthlyRate), tenureMonths) - 1);
+
+                let yearlyEMI = emi * 12;
+                let totalPayment = emi * tenureMonths;
+                let totalInterest = totalPayment - loanAmount;
+
+                document.getElementById("emiResult").innerText = `₹${Math.round(emi)}`;
+                document.getElementById("yearlyEMI").innerText = `₹${Math.round(yearlyEMI)}`;
+                document.getElementById("totalInterest").innerText = `₹${Math.round(totalInterest)}`;
+                document.getElementById("totalPayment").innerText = `₹${Math.round(totalPayment)}`;
+            } else {
+                document.getElementById("emiResult").innerText = "Please enter all values!";
+            }
+        }
+    </script>
+
+</body>
+</html>
