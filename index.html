@@ -78,7 +78,6 @@
             border-radius: 2px;
             cursor: pointer;
         }
-
         .result-box {
             background-color: #f9fafb;
             padding: 1.5rem;
@@ -117,7 +116,7 @@
             }
             table {
                 font-size: 0.7rem;
-                min-width: 600px; /* Ensure table is wide enough to show all columns */
+                min-width: 400px; /* Ensure table is wide enough for 3 columns */
             }
             th, td {
                 padding: 0.5rem 0.25rem;
@@ -197,31 +196,50 @@
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Left side: Inputs -->
             <div class="w-full lg:w-2/3 flex flex-col gap-6">
+                
                 <!-- Loan Amount -->
                 <div class="input-group">
                     <label for="loanAmount" class="text-lg">Loan Amount (₹)</label>
-                    <div class="flex items-center gap-4">
-                        <input type="range" id="loanAmount" min="10000" max="10000000" step="1000" value="1000000">
-                        <span id="loanAmountValue" class="text-lg font-medium text-blue-600"></span>
+                    <!-- Display Value and +/- Buttons -->
+                    <div class="flex items-center justify-between mt-1 mb-2">
+                        <span id="loanAmountValue" class="text-xl font-bold text-blue-600"></span>
+                        <div class="flex space-x-2">
+                            <button onclick="adjustLoanAmount(-1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-red-200 transition text-red-600 border border-gray-300 shadow-sm">-</button>
+                            <button onclick="adjustLoanAmount(1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-green-200 transition text-green-600 border border-gray-300 shadow-sm">+</button>
+                        </div>
                     </div>
+                    <!-- Range Slider -->
+                    <input type="range" id="loanAmount" min="10000" max="10000000" step="1000" value="1000000" oninput="updateAndCalculate()">
                 </div>
 
-                <!-- Rate of Interest -->
+                <!-- Rate of Interest - UPDATED MAX TO 100 -->
                 <div class="input-group">
                     <label for="interestRate" class="text-lg">Rate of Interest (p.a)</label>
-                    <div class="flex items-center gap-4">
-                        <input type="range" id="interestRate" min="1" max="25" step="0.1" value="10">
-                        <span id="interestRateValue" class="text-lg font-medium text-blue-600"></span>
+                    <!-- Display Value and +/- Buttons -->
+                    <div class="flex items-center justify-between mt-1 mb-2">
+                        <span id="interestRateValue" class="text-xl font-bold text-blue-600"></span>
+                        <div class="flex space-x-2">
+                            <button onclick="adjustInterestRate(-1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-red-200 transition text-red-600 border border-gray-300 shadow-sm">-</button>
+                            <button onclick="adjustInterestRate(1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-green-200 transition text-green-600 border border-gray-300 shadow-sm">+</button>
+                        </div>
                     </div>
+                    <!-- Range Slider: MAX is now 100 -->
+                    <input type="range" id="interestRate" min="1" max="100" step="0.1" value="10" oninput="updateAndCalculate()">
                 </div>
 
                 <!-- Loan Tenure -->
                 <div class="input-group">
                     <label for="loanTenure" class="text-lg">Loan Tenure (Years)</label>
-                    <div class="flex items-center gap-4">
-                        <input type="range" id="loanTenure" min="1" max="30" step="1" value="10">
-                        <span id="loanTenureValue" class="text-lg font-medium text-blue-600"></span>
+                    <!-- Display Value and +/- Buttons -->
+                    <div class="flex items-center justify-between mt-1 mb-2">
+                        <span id="loanTenureValue" class="text-xl font-bold text-blue-600"></span>
+                        <div class="flex space-x-2">
+                            <button onclick="adjustLoanTenure(-1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-red-200 transition text-red-600 border border-gray-300 shadow-sm">-</button>
+                            <button onclick="adjustLoanTenure(1)" class="w-8 h-8 flex items-center justify-center text-xl font-bold bg-gray-100 rounded-full hover:bg-green-200 transition text-green-600 border border-gray-300 shadow-sm">+</button>
+                        </div>
                     </div>
+                    <!-- Range Slider -->
+                    <input type="range" id="loanTenure" min="1" max="30" step="1" value="10" oninput="updateAndCalculate()">
                 </div>
 
                 <!-- Results -->
@@ -258,14 +276,13 @@
 
         <!-- EMI Table -->
         <div class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">EMI Repayment Schedule</h2>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">EMI Repayment Schedule (Simplified)</h2>
             <div class="emi-table-container border rounded-lg overflow-hidden">
                 <table class="w-full text-sm text-left text-gray-700">
                     <thead class="text-xs text-gray-700 uppercase">
+                        <!-- UPDATED: Only showing Month, Total Payment, and Balance -->
                         <tr>
                             <th scope="col" class="px-6 py-3">Month</th>
-                            <th scope="col" class="px-6 py-3">Principal Paid</th>
-                            <th scope="col" class="px-6 py-3">Interest Charged</th>
                             <th scope="col" class="px-6 py-3">Total Payment</th>
                             <th scope="col" class="px-6 py-3">Balance</th>
                         </tr>
@@ -302,6 +319,12 @@
         const modalTotalInterestEl = document.getElementById('modalTotalInterest');
         const modalTotalPaymentEl = document.getElementById('modalTotalPayment');
 
+        // Helper function to update the input value, display, and run calculation
+        const updateAndCalculate = () => {
+            updateInputValues();
+            calculateEMI();
+        }
+
         // Function to format numbers as Indian Rupees
         const formatCurrency = (amount) => {
             return new Intl.NumberFormat('en-IN', {
@@ -316,11 +339,58 @@
             const P = parseFloat(loanAmountInput.value);
             const R = parseFloat(interestRateInput.value);
             const N = parseFloat(loanTenureInput.value);
+            
+            // Update the display spans with formatted values
             loanAmountValueSpan.textContent = formatCurrency(P);
             interestRateValueSpan.textContent = `${R}%`;
-            loanTenureValueSpan.textContent = `${N} Yr`;
+            loanTenureValueSpan.textContent = `${N} Years`;
         };
 
+        // Core function to adjust input values using +/- buttons
+        // 'multiplier' determines how many 'steps' to jump (e.g., 1 for single step, 10 for ten steps)
+        const adjustValue = (inputEl, multiplier) => {
+            const min = parseFloat(inputEl.min);
+            const max = parseFloat(inputEl.max);
+            const step = parseFloat(inputEl.step);
+            let currentValue = parseFloat(inputEl.value);
+            
+            // Calculate the total change amount
+            let delta = multiplier * step;
+
+            let newValue = currentValue + delta;
+
+            // Clamp the value to ensure it stays within min/max bounds
+            newValue = Math.min(Math.max(newValue, min), max);
+            
+            // Fix floating point issues for steps (e.g., 0.1)
+            if (step % 1 !== 0) {
+                // Determine the number of decimal places from the step
+                const decimalPlaces = step.toString().split('.')[1]?.length || 0;
+                newValue = parseFloat(newValue.toFixed(decimalPlaces));
+            }
+            
+            // Update the input and trigger calculation
+            inputEl.value = newValue;
+            updateAndCalculate();
+        };
+
+        // Specific adjustment functions for buttons
+        const adjustLoanAmount = (direction) => {
+            // Adjust by 1000 INR, which is the input's step (1000). 
+            // We pass '1' or '-1' as the multiplier.
+            adjustValue(loanAmountInput, direction); 
+        };
+        
+        const adjustInterestRate = (direction) => {
+            // Adjust by 1% per click (10 steps of 0.1).
+            adjustValue(interestRateInput, direction * 10);
+        };
+        
+        const adjustLoanTenure = (direction) => {
+            // Adjust by 1 year per click (1 step of 1).
+            adjustValue(loanTenureInput, direction);
+        };
+        
         // Function to calculate EMI and update UI
         const calculateEMI = () => {
             const P = parseFloat(loanAmountInput.value);
@@ -331,7 +401,18 @@
             if (R === 0) {
                 monthlyEmi = P / N;
             } else {
-                monthlyEmi = P * R * Math.pow(1 + R, N) / (Math.pow(1 + R, N) - 1);
+                // EMI Formula: P * R * (1 + R)^N / ((1 + R)^N - 1)
+                if (R > 0) {
+                    monthlyEmi = P * R * Math.pow(1 + R, N) / (Math.pow(1 + R, N) - 1);
+                } else {
+                    // Fallback to simple division if rate is effectively zero
+                    monthlyEmi = P / N;
+                }
+            }
+            
+            // Ensure EMI is a number and not infinity or NaN
+            if (isNaN(monthlyEmi) || !isFinite(monthlyEmi)) {
+                monthlyEmi = 0;
             }
 
             const totalPayment = monthlyEmi * N;
@@ -339,12 +420,12 @@
 
             // Update standard result displays
             monthlyEmiEl.textContent = formatCurrency(monthlyEmi);
-            totalInterestEl.textContent = formatCurrency(totalInterest);
+            totalInterestEl.textContent = formatCurrency(totalInterest > 0 ? totalInterest : 0); // Ensure interest is not negative
             totalPaymentEl.textContent = formatCurrency(totalPayment);
             
             // Update modal result displays
             modalMonthlyEmiEl.textContent = formatCurrency(monthlyEmi);
-            modalTotalInterestEl.textContent = formatCurrency(totalInterest);
+            modalTotalInterestEl.textContent = formatCurrency(totalInterest > 0 ? totalInterest : 0);
             modalTotalPaymentEl.textContent = formatCurrency(totalPayment);
 
             // Generate amortization table
@@ -374,35 +455,69 @@
         const generateEmiTable = (principal, monthlyRate, months, monthlyEmi) => {
             let balance = principal;
             let rows = '';
+            // NOTE: colspan is 3 now, since we only show 3 columns (Month, Total Payment, Balance)
+            const COLSPAN = 3;
 
-            for (let i = 1; i <= months; i++) {
-                const interestCharged = balance * monthlyRate;
-                const principalPaid = monthlyEmi - interestCharged;
-                balance -= principalPaid;
+            // Limiting the table to 100 entries for performance
+            const limit = Math.min(months, 100); 
+            
+            for (let i = 1; i <= limit; i++) {
+                // If EMI is 0 (due to calculation error or 0 interest and 0 time), skip
+                if (monthlyEmi === 0 || monthlyEmi < 0 || principal === 0) {
+                    if (i === 1) {
+                        // Only add content if a valid EMI could be calculated
+                        rows += `<tr class="bg-gray-100 text-center"><td colspan="${COLSPAN}" class="py-4">Invalid loan parameters for EMI calculation.</td></tr>`;
+                    }
+                    emiTableBody.innerHTML = rows;
+                    return;
+                }
 
-                // Create a row for each month
+                let interestCharged = balance * monthlyRate;
+                let principalPaid = monthlyEmi - interestCharged;
+
+                // Final payment adjustments
+                if (i === months || balance - principalPaid < 1) { // Check if this is the last month or if principal paid exceeds balance
+                    principalPaid = balance; // Ensure last payment clears the remaining balance
+                    monthlyEmi = principalPaid + interestCharged; // Adjust final EMI if necessary
+                    balance = 0;
+                } else {
+                    balance -= principalPaid;
+                }
+                
+                // UPDATED ROW: Only showing Month, Total Payment, and Balance
                 rows += `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-6 py-4">${i}</td>
-                        <td class="px-6 py-4">${formatCurrency(principalPaid)}</td>
-                        <td class="px-6 py-4">${formatCurrency(interestCharged)}</td>
                         <td class="px-6 py-4">${formatCurrency(monthlyEmi)}</td>
                         <td class="px-6 py-4">${formatCurrency(balance > 0 ? balance : 0)}</td>
                     </tr>
                 `;
             }
+
+            // Add a row to show total months if they exceed the 100-month limit
+            if (months > 100) {
+                rows += `
+                    <tr class="bg-gray-100 font-semibold text-center border-t-2 border-gray-300">
+                        <td colspan="${COLSPAN}" class="px-6 py-4">... Showing first 100 months out of ${months} total payments ...</td>
+                    </tr>
+                `;
+            }
+
             emiTableBody.innerHTML = rows;
         };
 
         // Function to initialize and update the donut chart
         const updateChart = (principal, totalInterest) => {
+            const chartPrincipal = principal > 0 ? principal : 1; // Prevent zero principal errors
+            const chartInterest = totalInterest > 0 ? totalInterest : 0;
+
             const data = {
                 labels: ['Principal Amount', 'Total Interest'],
                 datasets: [{
-                    data: [principal, totalInterest],
+                    data: [chartPrincipal, chartInterest],
                     backgroundColor: [
-                        '#2563eb',
-                        '#93c5fd'
+                        '#2563eb', // Blue for Principal
+                        '#93c5fd'  // Light Blue for Interest
                     ],
                     hoverOffset: 4,
                     borderWidth: 0,
@@ -445,17 +560,13 @@
             emiChart = new Chart(emiChartCanvas, config);
         };
 
-        // Add event listeners to update value displays in real-time
-        loanAmountInput.addEventListener('input', updateInputValues);
-        interestRateInput.addEventListener('input', updateInputValues);
-        loanTenureInput.addEventListener('input', updateInputValues);
+        // Add event listeners to update value displays and calculate in real-time when slider is moved
+        loanAmountInput.addEventListener('input', updateAndCalculate);
+        interestRateInput.addEventListener('input', updateAndCalculate);
+        loanTenureInput.addEventListener('input', updateAndCalculate);
 
         // Initial update on page load
         window.onload = () => {
-            updateInputValues();
-            calculateEMI();
+            updateAndCalculate();
         };
     </script>
-
-</body>
-</html>
